@@ -5,6 +5,14 @@ pluginManagement {
       name = "sonatype"
       url = uri("https://oss.sonatype.org/content/repositories/snapshots")
     }
+    maven {
+      name = "aliyun-central"
+      url = uri("https://maven.aliyun.com/repository/central")
+    }
+    maven {
+      name = "aliyun-public"
+      url = uri("https://maven.aliyun.com/repository/public")
+    }
   }
 }
 

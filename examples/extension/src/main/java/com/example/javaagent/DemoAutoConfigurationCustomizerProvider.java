@@ -27,31 +27,39 @@ import java.util.Map;
  */
 @AutoService(AutoConfigurationCustomizerProvider.class)
 public class DemoAutoConfigurationCustomizerProvider
-    implements AutoConfigurationCustomizerProvider {
+        implements AutoConfigurationCustomizerProvider {
 
-  @Override
-  public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    autoConfiguration
-        .addTracerProviderCustomizer(this::configureSdkTracerProvider)
-        .addPropertiesSupplier(this::getDefaultProperties);
-  }
+    @Override
+    public void customize(AutoConfigurationCustomizer autoConfiguration) {
+        autoConfiguration
+                // .addTracerProviderCustomizer(this::configureSdkTracerProvider)
+                .addPropertiesSupplier(this::getDefaultProperties)
+        ;
+    }
 
-  private SdkTracerProviderBuilder configureSdkTracerProvider(
-      SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
+    private SdkTracerProviderBuilder configureSdkTracerProvider(
+            SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
+        return tracerProvider
+                // .setIdGenerator(new DemoIdGenerator())
+                // .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(1024).build())
+                .addSpanProcessor(new DemoSpanProcessor())
+                // .addSpanProcessor(SimpleSpanProcessor.create(new DemoSpanExporter()))
+                ;
+    }
 
-    return tracerProvider
-        .setIdGenerator(new DemoIdGenerator())
-        .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(1024).build())
-        .addSpanProcessor(new DemoSpanProcessor())
-        .addSpanProcessor(SimpleSpanProcessor.create(new DemoSpanExporter()));
-  }
-
-  private Map<String, String> getDefaultProperties() {
-    Map<String, String> properties = new HashMap<>();
-    properties.put("otel.exporter.otlp.endpoint", "http://backend:8080");
-    properties.put("otel.exporter.otlp.insecure", "true");
-    properties.put("otel.config.max.attrs", "16");
-    properties.put("otel.traces.sampler", "demo");
-    return properties;
-  }
+    private Map<String, String> getDefaultProperties() {
+        Map<String, String> properties = new HashMap<>();
+        // instrumentation
+        properties.put("otel.instrumentation.logback-mdc.enabled", "true");
+        properties.put("otel.instrumentation.logback-mdc.add-baggage", "true");
+        properties.put("otel.instrumentation.logback-appender.enabled", "true");
+        properties.put("otel.instrumentation.executors.enabled", "true");
+        // propagators
+        properties.put("otel.propagators", "tracecontext,baggage,jx");
+        // exporter
+        properties.put("otel.traces.exporter", "otlp,logging-otlp");
+        properties.put("otel.metrics.exporter", "none");
+        properties.put("otel.logs.exporter", "none");
+        return properties;
+    }
 }

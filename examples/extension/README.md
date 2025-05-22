@@ -10,7 +10,7 @@ The contents in this folder demonstrate how to create an extension for the OpenT
 
 ## Build and add extensions
 
-To build this extension project, run `./gradlew build`. You can find the resulting jar file in `build/libs/`.
+To build this extension project, run `./gradlew build -x test`. You can find the resulting jar file in `build/libs/`.
 
 To add the extension to the instrumentation agent:
 

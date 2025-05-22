@@ -41,6 +41,14 @@ repositories {
     name = "sonatype"
     url = uri("https://oss.sonatype.org/content/repositories/snapshots")
   }
+  maven {
+    name = "aliyun-central"
+    url = uri("https://maven.aliyun.com/repository/central")
+  }
+  maven {
+    name = "aliyun-public"
+    url = uri("https://maven.aliyun.com/repository/public")
+  }
 }
 
 configurations {
@@ -52,13 +60,13 @@ configurations {
   otel
 }
 
-spotless {
-  java {
-    googleJavaFormat()
-    licenseHeaderFile(rootProject.file("../../buildscripts/spotless.license.java"), "(package|import|public)")
-    target("src/**/*.java")
-  }
-}
+// spotless {
+//   java {
+//     googleJavaFormat()
+//     licenseHeaderFile(rootProject.file("../../buildscripts/spotless.license.java"), "(package|import|public)")
+//     target("src/**/*.java")
+//   }
+// }
 
 dependencies {
   implementation(platform("io.opentelemetry:opentelemetry-bom:${versions.opentelemetrySdk}"))

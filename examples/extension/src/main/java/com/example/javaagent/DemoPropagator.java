@@ -5,6 +5,8 @@
 
 package com.example.javaagent;
 
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -12,6 +14,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * See <a
@@ -21,31 +24,45 @@ import java.util.List;
  * @see DemoPropagatorProvider
  */
 public class DemoPropagator implements TextMapPropagator {
-  private static final String FIELD = "X-demo-field";
-  private static final ContextKey<Long> PROPAGATION_START_KEY =
-      ContextKey.named("propagation.start");
+  public static final String PARENT_SPAN_ID = "parent_span_id";
+  public static final ContextKey<String> PARENT_SPAN_ID_KEY = ContextKey.named(PARENT_SPAN_ID);
+  public static final String X_B3_TRACE_ID = "X-B3-TraceId";
+  public static final ContextKey<String> X_B3_TRACEID_KEY = ContextKey.named(X_B3_TRACE_ID);
+  public static final String X_B3_PARENT_SPAN_ID = "X-B3-ParentSpanId";
+  public static final ContextKey<String> X_B3_PARENT_SPAN_ID_KEY = ContextKey.named(X_B3_PARENT_SPAN_ID);
 
   @Override
   public List<String> fields() {
-    return Collections.singletonList(FIELD);
+    return Collections.singletonList(PARENT_SPAN_ID);
   }
 
   @Override
   public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
-    Long propagationStart = context.get(PROPAGATION_START_KEY);
-    if (propagationStart == null) {
-      propagationStart = System.currentTimeMillis();
-    }
-    setter.set(carrier, FIELD, String.valueOf(propagationStart));
+    String serverSpanId = Span.current().getSpanContext().getSpanId();
+    String clientSpanId = Span.fromContext(context).getSpanContext().getSpanId();
+    System.out.println("DemoPropagator.inject, serverSpanId: " + serverSpanId + ", clientSpanId: " + clientSpanId);
+
+    System.out.println("DemoPropagator.inject, Baggage: ");
+    Baggage.current().forEach((k, v) -> {
+      System.out.println(k + ": " + v.getValue());
+    });
+
+    setter.set(carrier, PARENT_SPAN_ID, serverSpanId);
   }
 
   @Override
   public <C> Context extract(Context context, C carrier, TextMapGetter<C> getter) {
-    String propagationStart = getter.get(carrier, FIELD);
-    if (propagationStart != null) {
-      return context.with(PROPAGATION_START_KEY, Long.valueOf(propagationStart));
-    } else {
-      return context;
-    }
+    String parentServerSpanId = Optional.ofNullable(getter.get(carrier, PARENT_SPAN_ID)).orElse("");
+
+    System.out.println("DemoPropagator.extract, Baggage.current(): ");
+    Baggage.current().forEach((k, v) -> {
+      System.out.println(k + ": " + v.getValue());
+    });
+
+    Baggage baggage = Baggage.current().toBuilder()
+            .put(PARENT_SPAN_ID, parentServerSpanId)
+            .build();
+
+    return context.with(PARENT_SPAN_ID_KEY, parentServerSpanId).with(baggage);
   }
 }

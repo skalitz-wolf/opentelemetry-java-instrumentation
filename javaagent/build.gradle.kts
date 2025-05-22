@@ -205,7 +205,7 @@ tasks {
 
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
-    archiveClassifier.set("")
+    archiveClassifier.set("jx.250521")
 
     manifest {
       attributes(jar.get().manifest.attributes)

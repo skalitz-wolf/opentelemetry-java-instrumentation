@@ -5,12 +5,17 @@
 
 package com.example.javaagent;
 
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import org.apache.commons.lang3.RandomStringUtils;
+
+import java.util.Optional;
+
+import static com.example.javaagent.DemoPropagator.PARENT_SPAN_ID;
+import static com.example.javaagent.DemoPropagator.PARENT_SPAN_ID_KEY;
 
 /**
  * See <a
@@ -23,12 +28,21 @@ public class DemoSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    /*
-    The sole purpose of this attribute is to introduce runtime dependency on some external library.
-    We need this to demonstrate how extension can use them.
-     */
-    span.setAttribute("random", RandomStringUtils.random(10));
-    span.setAttribute("custom", "demo");
+
+    String parentServerSpanId = Optional.ofNullable(parentContext.get(PARENT_SPAN_ID_KEY)).orElse("");
+    System.out.println("DemoSpanProcessor.onStart, parentServerSpanId: " + parentServerSpanId);
+
+    System.out.println("DemoSpanProcessor.onStart, Baggage.fromContext(parentContext): ");
+    Baggage.fromContext(parentContext).forEach((k, v) -> {
+      System.out.println(k + ": " + v.getValue());
+    });
+
+    System.out.println("DemoSpanProcessor.onStart, Baggage.current(): ");
+    Baggage.current().forEach((k, v) -> {
+      System.out.println(k + ": " + v.getValue());
+    });
+
+    span.setAttribute(PARENT_SPAN_ID, parentServerSpanId);
   }
 
   @Override

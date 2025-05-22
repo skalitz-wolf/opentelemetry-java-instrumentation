@@ -25,6 +25,14 @@ plugins {
 
 dependencyResolutionManagement {
   repositories {
+    maven {
+      name = "aliyun-central"
+      url = uri("https://maven.aliyun.com/repository/central")
+    }
+    maven {
+      name = "aliyun-public"
+      url = uri("https://maven.aliyun.com/repository/public")
+    }
     mavenCentral()
     mavenLocal()
   }

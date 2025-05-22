@@ -18,7 +18,7 @@ import net.bytebuddy.matcher.ElementMatcher;
  * This is a demo instrumentation which hooks into servlet invocation and modifies the http
  * response.
  */
-@AutoService(InstrumentationModule.class)
+// @AutoService(InstrumentationModule.class)
 public final class DemoServlet3InstrumentationModule extends InstrumentationModule {
   public DemoServlet3InstrumentationModule() {
     super("servlet-demo", "servlet-3");
