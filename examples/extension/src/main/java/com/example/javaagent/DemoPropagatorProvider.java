@@ -25,6 +25,6 @@ public class DemoPropagatorProvider implements ConfigurablePropagatorProvider {
 
   @Override
   public String getName() {
-    return "jx";
+    return "jxlife";
   }
 }

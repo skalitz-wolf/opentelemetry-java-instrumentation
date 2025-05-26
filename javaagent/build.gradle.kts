@@ -205,7 +205,7 @@ tasks {
 
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
-    archiveClassifier.set("jx.250521")
+    archiveClassifier.set("")
 
     manifest {
       attributes(jar.get().manifest.attributes)
@@ -216,6 +216,26 @@ tasks {
         "Can-Redefine-Classes" to true,
         "Can-Retransform-Classes" to true,
       )
+    }
+
+    doLast {
+        println("开始执行shadowJar doLast任务")
+        
+        val targetDir = file("$rootDir/examples/extension/build/libs/${getVersionDirName()}")
+        println("目标目录: $targetDir")
+        
+        if (!targetDir.exists()) {
+            println("创建目录: $targetDir")
+            targetDir.mkdirs()
+        }
+        
+        println("源文件: ${archiveFile.get()}")
+        copy {
+            from(archiveFile)
+            into(targetDir)
+            rename { "opentelemetry-javaagent.jar" }
+        }
+        println("shadowJar doLast 任务执行完成")
     }
   }
 
@@ -442,4 +462,19 @@ class JavaagentProvider(
     "-javaagent:${file(agentJar).absolutePath}",
     "-Dotel.javaagent.testing.transform-safe-logging.enabled=true"
   )
+}
+
+fun getVersionDirName(): String {
+    return try {
+        val process = ProcessBuilder("git", "rev-parse", "--abbrev-ref", "HEAD").start()
+        process.waitFor()
+        val branchName = process.inputStream.bufferedReader().readLine()?.trim() ?: ""
+        if (branchName.startsWith("release/")) {
+            branchName.substring("release/".length)
+        } else {
+            branchName
+        }
+    } catch (e: Exception) {
+        throw GradleException("Failed to get Git branch name: ${e.message}", e)
+    }
 }

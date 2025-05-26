@@ -182,3 +182,46 @@ muzzle {
     assertInverse.set(true)
   }
 }
+
+shadowJar {
+    archiveBaseName = 'opentelemetry-java-instrumentation-extension-demo'
+    archiveClassifier = 'all'
+    archiveVersion = '1.0'
+
+    doLast {
+        println "开始执行 shadowJar doLast 任务"
+        
+        def targetDir = file("${buildDir}/libs/${getVersionDirName()}")
+        println "目标目录: ${targetDir}"
+        
+        if (!targetDir.exists()) {
+            println "创建目录: ${targetDir}"
+            targetDir.mkdirs()
+        }
+        
+        def sourceFile = archiveFile.get().asFile
+        println "源文件: ${sourceFile}"
+        
+        copy {
+            from sourceFile
+            into targetDir
+            rename { fileName ->
+                def newName = fileName.replace("extension-demo-1.0", "extension-jxlife")
+                println "重命名文件: ${fileName} -> ${newName}"
+                newName
+            }
+        }
+        
+        println "shadowJar doLast 任务执行完成"
+        println "生成文件: ${targetDir}/${sourceFile.name.replace('extension-demo-1.0', 'extension-jxlife')}"
+    }
+}
+
+static def getVersionDirName() {
+    try {
+        def branchName = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
+        return branchName.startsWith('release/') ? branchName.substring('release/'.length()) : branchName
+    } catch (Exception e) {
+        throw new GradleException("Failed to get Git branch name: ${e.message}", e)
+    }
+}
