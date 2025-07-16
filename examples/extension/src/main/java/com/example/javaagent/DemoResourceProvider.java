@@ -11,10 +11,12 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 
-// @AutoService(ResourceProvider.class)
+@AutoService(ResourceProvider.class)
 public class DemoResourceProvider implements ResourceProvider {
   @Override
   public Resource createResource(ConfigProperties config) {
+    System.out.println("DemoResourceProvider, createResource, spring.application.name: " + config.getString("spring.application.name"));
+    System.out.println("DemoResourceProvider, createResource, spring.profiles.active: " + config.getString("spring.profiles.active"));
     Attributes attributes = Attributes.builder().put("custom.resource", "demo").build();
     return Resource.create(attributes);
   }
