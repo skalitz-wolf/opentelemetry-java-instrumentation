@@ -57,6 +57,9 @@ public class LoggingEventInstrumentation implements TypeInstrumentation {
 
   @SuppressWarnings("unused")
   public static class GetMdcAdvice {
+
+    public static final String PARENT_SPAN_ID = "jxlife_parent_span_id";
+
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void onExit(
         @Advice.This ILoggingEvent event,
@@ -83,6 +86,9 @@ public class LoggingEventInstrumentation implements TypeInstrumentation {
         spanContextData.put(traceIdKey(), spanContext.getTraceId());
         spanContextData.put(spanIdKey(), spanContext.getSpanId());
         spanContextData.put(traceFlagsKey(), spanContext.getTraceFlags().asHex());
+        // 兼容当前 logback-spring.xml
+        spanContextData.put("X-B3-TraceId", spanContext.getTraceId());
+        spanContextData.put("X-B3-SpanId", spanContext.getSpanId());
       }
       spanContextData.putAll(ConfiguredResourceAttributesHolder.getResourceAttributes());
 
@@ -95,6 +101,10 @@ public class LoggingEventInstrumentation implements TypeInstrumentation {
           spanContextData.put(
               // prefix all baggage values to avoid clashes with existing context
               "baggage." + entry.getKey(), entry.getValue().getValue());
+          // 兼容当前 logback-spring.xml
+          if (PARENT_SPAN_ID.equals(entry.getKey())) {
+            spanContextData.put("X-B3-ParentSpanId", entry.getValue().getValue());
+          }
         }
       }
 

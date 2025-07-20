@@ -32,7 +32,7 @@ public class DemoAutoConfigurationCustomizerProvider
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
     autoConfiguration
-        .addTracerProviderCustomizer(this::configureSdkTracerProvider)
+        // .addTracerProviderCustomizer(this::configureSdkTracerProvider)
         .addPropertiesSupplier(this::getDefaultProperties);
   }
 
