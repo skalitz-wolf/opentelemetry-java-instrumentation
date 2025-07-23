@@ -62,6 +62,8 @@ spotless {
 }
 
 dependencies {
+  implementation("org.snakeyaml:snakeyaml-engine:2.10")
+
   implementation(platform("io.opentelemetry:opentelemetry-bom:${versions.opentelemetrySdk}"))
 
   // these serve as a test of the instrumentation boms
